@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Adriano Teles
       * Date: 03/11/2016
-      * Purpose: RENATO LIXO
+      * Purpose: ADRIANO LIXO
       *****************************************************************
        IDENTIFICATION DIVISION.
            PROGRAM-ID. FOLHA-DE-PAGAMENTO.
