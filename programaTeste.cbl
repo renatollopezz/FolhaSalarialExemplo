@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Adriano Teles
       * Date: 03/11/2016
-      * Purpose: Calculate payroll
+      * Purpose: cal cu ladora folha pag
       *****************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. FOLHA-DE-PAGAMENTO.
