@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Adriano Teles
       * Date: 03/11/2016
-      * Purpose: ADRIANO muito  LIXO
+      * Purpose: ADRIANO EU SOU OARIO  LIXO
       *****************************************************************
        IDENTIFICATION DIVISION.
            PROGRAM-ID. FOLHA-DE-PAGAMENTO.
