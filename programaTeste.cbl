@@ -1,10 +1,10 @@
       ******************************************************************
       * Author: Adriano Teles
       * Date: 03/11/2016
-      * Purpose: cal cu ladora folha pag
+      * Purpose: RENATO LIXO
       *****************************************************************
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. FOLHA-DE-PAGAMENTO.
+           PROGRAM-ID. FOLHA-DE-PAGAMENTO.
        DATA DIVISION.
        FILE SECTION.
        WORKING-STORAGE SECTION.
