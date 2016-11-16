@@ -1,0 +1,304 @@
+      ******************************************************************
+      * Author: Adriano Teles and Renato Lopes
+      * Date: 03/11/2016
+      * Purpose: Calculate payroll
+      ******************************************************************
+      *-----------------------------------------------------------------
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. FOLHA-DE-PAGAMENTO.
+      *-----------------------------------------------------------------
+       ENVIRONMENT DIVISION.
+           CONFIGURATION SECTION.
+           SPECIAL-NAMES.
+               DECIMAL-POINT IS COMMA.
+
+            INPUT-OUTPUT SECTION.
+               FILE-CONTROL.
+               SELECT COLABORADOR-FS ASSIGN TO 'folhasalarial.txt'
+               ORGANIZATION IS LINE SEQUENTIAL.
+
+
+      *-----------------------------------------------------------------
+       DATA DIVISION.
+              FILE SECTION.
+              FD COLABORADOR-FS.
+       01 COLABORADOR-FILE.
+           02 COLABORADOR-NOME PIC A(50).
+           02 COLABORADOR-MAT PIC 9(5).
+           02 COLABORADOR-CPF PIC 9(11).
+           02 COLABORADOR-RG PIC 9(8).
+           02 COLABORADOR-CARGO PIC A(45).
+           02 COLABORADOR-CH PIC 9(3).
+           02 COLABORADOR-SALBA PIC 9(6)V9(2).
+           02 COLABORADOR-SALIQ PIC 9(6)V9(2).
+           02 COLABORADOR-SALBR PIC 9(6)V9(2).
+           02 COLABORADOR-HE PIC 9(2).
+           02 COLABORADOR-TOTAL-HE PIC 9(6)V9(2).
+           02 COLABORADOR-INSS PIC 9(6)V9(2).
+           02 COLABORADOR-IRRF PIC 9(6)V9(2).
+           02 COLABORADOR-DEP PIC 9(2).
+           02 COLABORADOR-FILHOS PIC 9(2).
+           02 COLABORADOR-TOTAL-SFM PIC 9(6)V9(2).
+           02 COLABORADOR-TOTAL-DEP PIC 9(6)V9(2).
+           02 COLABORADOR-VT PIC 9(6)V9(2).
+           02 COLABORADOR-SEXO PIC A.
+           02 COLABORADOR-DSR PIC 9(6)V9(2).
+           02 COLABORADOR-ADMISSAO PIC 9(8).
+       WORKING-STORAGE SECTION.
+             01 WS-STUDENT.
+            05 WS-ID PIC 9(5).
+            05 WS-EOF PIC X(1).
+            05 WS-SEPARDOR PIC X(1) VALUE '-'.
+            05 WS-NAME PIC A(25).
+
+       77 WS-TELA PIC 9.
+       77 OP-VT PIC A.
+           88 SIM VALUE 'S'.
+           88 NAO VALUE 'N'.
+       77  WS-MAIUSCULAS PIC X(026) VALUE 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.
+       77  WS-MINUSCULAS PIC X(026) VALUE 'abcdefghijklmnopqrstuvwxyz'.
+       77  MASC-MONEY PIC ZZZ.ZZ9,99.
+       77  MASC-DATE PIC 99/99/9999.
+       01 COLABORADOR.
+           02 WS-NOME PIC A(50).
+           02 WS-MAT PIC 9(5).
+           02 WS-CPF PIC 9(11).
+           02 WS-RG PIC 9(8).
+           02 WS-CARGO PIC A(45).
+           02 WS-CH PIC 9(3).
+           02 WS-SALBA PIC 9(6)V9(2).
+           02 WS-SALIQ PIC 9(6)V9(2).
+           02 WS-SALBR PIC 9(6)V9(2).
+           02 WS-HE PIC 9(2).
+           02 WS-TOTAL-HE PIC 9(6)V9(2).
+           02 WS-INSS PIC 9(6)V9(2).
+           02 WS-IRRF PIC 9(6)V9(2).
+           02 WS-DEP PIC 9(2).
+           02 WS-FILHOS PIC 9(2).
+           02 WS-TOTAL-SFM PIC 9(6)V9(2).
+           02 WS-TOTAL-DEP PIC 9(6)V9(2).
+           02 WS-VT PIC 9(6)V9(2).
+           02 WS-SEXO PIC A.
+           02 WS-DSR PIC 9(6)V9(2).
+           02 WS-ADMISSAO PIC 9(8).
+       01 WS-DATA-FOLHA.
+               02 WS-ANO-FOLHA PIC 9(4).
+               02 WS-MES-FOLHA PIC 9(2).
+               02 WS-DIA-FOLHA PIC 9(2).
+
+           SCREEN SECTION.
+           01 TELA-CADASTRO.
+               02 BLANK SCREEN.
+               02 LINE 1  COL 3  VALUE 'COMPETENCIA:'.
+               02 LINE 1  COL 18 VALUE '/'.
+               02 LINE 2  COL 3  VALUE '________________________________
+      -'___________________________________________'.
+               02 LINE 3  COL 33 VALUE 'COLABORADOR'.
+               02 LINE 4  COL 26 VALUE 'NOME:'.
+               02 LINE 4  COL 5  VALUE 'MATRICULA:'.
+               02 LINE 5  COL 5  VALUE 'CARGO:'.
+               02 LINE 5  COL 62 VALUE 'SEXO(M/F):'.
+               02 LINE 6  COL 5  VALUE 'ADMISSAO:'.
+      *>          02 LINE 6  COL 17 VALUE '/'.
+      *>          02 LINE 6  COL 20 VALUE '/'.
+               02 LINE 6  COL 30 VALUE 'CPF:'.
+               02 LINE 6  COL 51 VALUE 'RG:'.
+               02 LINE 7  COL 3  VALUE '________________________________
+      -'___________________________________________'.
+               02 LINE 8  COL 31 VALUE 'BASE DE CALCULO'.
+               02 LINE 9  COL 5  VALUE 'SALARIO BASE: R$'.
+               02 LINE 9  COL 35 VALUE 'CARGA HORARIA:'.
+               02 LINE 9  COL 58 VALUE 'HORAS EXTRAS:'.
+               02 LINE 10 COL 5  VALUE 'DEPENDENTES:'.
+               02 LINE 10 COL 35  VALUE 'QTD FILHOS:'.
+               02 LINE 10 COL 58 VALUE 'VT(S/N):'.
+               02 LINE 11 COL 3  VALUE '________________________________
+      -'___________________________________________'.
+               02 LINE 12 COL 16 VALUE 'PROVENTOS'.
+               02 LINE 12 COL 53 VALUE 'DESCONTOS'.
+               02 LINE 13 COL 38 VALUE '|'.
+               02 LINE 14 COL 38 VALUE '|'.
+               02 LINE 15 COL 38 VALUE '|'.
+               02 LINE 16 COL 38 VALUE '|'.
+               02 LINE 17 COL 38 VALUE '|'.
+               02 LINE 18 COL 38 VALUE '|'.
+               02 LINE 19 COL 38 VALUE '|'.
+               02 LINE 20 COL 38 VALUE '|'.
+               02 LINE 21 COL 38 VALUE '|'.
+               02 LINE 22 COL 38 VALUE '|'.
+               02 LINE 23 COL 38 VALUE '|'.
+               02 LINE 24 COL 38 VALUE '|'.
+               02 LINE 24 COL 5  VALUE 'SALARIO BRUTO: R$'.
+               02 LINE 24 COL 43 VALUE 'SALARIO LIQUIDO: R$'.
+      *-----------------------------------------------------------------
+       PROCEDURE DIVISION.
+           DISPLAY TELA-CADASTRO.
+           ACCEPT WS-DATA-FOLHA FROM DATE YYYYMMDD.
+           DISPLAY WS-MES-FOLHA AT 0116.
+           DISPLAY WS-ANO-FOLHA AT 0119.
+           ACCEPT WS-MAT AT 0416 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           ACCEPT WS-NOME AT 0432 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           INSPECT WS-NOME CONVERTING WS-MINUSCULAS TO WS-MAIUSCULAS.
+           DISPLAY WS-NOME AT 0432 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           ACCEPT WS-CARGO AT 0512 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           INSPECT WS-CARGO CONVERTING WS-MINUSCULAS TO WS-MAIUSCULAS.
+           DISPLAY WS-CARGO AT 0512 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+      *INICIO DA VERIFICA플O SE USUARIO INFORMOU SEXO CERTO M OU F
+               CB-VALIDAR-SEXO.
+           ACCEPT WS-SEXO AT 0573 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           INSPECT WS-SEXO CONVERTING WS-MINUSCULAS TO WS-MAIUSCULAS.
+           IF WS-SEXO NOT EQUAL 'M' AND WS-SEXO NOT EQUAL 'F'
+               GO TO CB-VALIDAR-SEXO.
+           DISPLAY WS-SEXO AT 05723 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+      * FIM DA VERIFICACAO SEXO
+
+      * INICIO VERIFICA플O SE USUARIO INFORMOU DATA CERTA
+      *>      DIA.
+      *>        ACCEPT WS-DIA AT 0615 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+      *>      IF WS-DIA > 31 OR WS-DIA < 1
+      *>          GO TO DIA.
+      *>      MES.
+      *>        ACCEPT WS-MES AT 0618 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+      *>      IF WS-MES > 12 OR WS-MES < 1
+      *>          GO TO MES.
+      *>      ANO.
+      *>        ACCEPT WS-ANO AT 0621 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+      *>      IF WS-ANO > WS-ANO-FOLHA OR WS-ANO < 1894
+      *>           GO TO ANO.
+      * FIM VERIFICA플O DA DATA
+
+           ACCEPT WS-ADMISSAO AT 0615 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           MOVE WS-ADMISSAO TO MASC-DATE.
+           DISPLAY MASC-DATE AT 06015 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+
+           ACCEPT WS-CPF AT 0635 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           ACCEPT WS-RG AT 0655 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           ACCEPT WS-SALBA AT 0922 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           MOVE WS-SALBA TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 0922 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           ACCEPT WS-CH AT 0950 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           ACCEPT WS-HE AT 0972 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           ACCEPT WS-DEP AT 1018 WITH HIGHLIGHT FOREGROUND-COLOR 3.
+           ACCEPT WS-FILHOS AT 1047 WITH HIGHLIGHT FOREGROUND-COLOR 03.
+
+      * INICIO DA VERIFICA플O SE USUARIO INFORMOU OP플O CERTA S OU N NO VT
+               VALIDAR_VT.
+           ACCEPT OP-VT AT 1067 WITH HIGHLIGHT FOREGROUND-COLOR 3
+           INSPECT OP-VT CONVERTING WS-MINUSCULAS TO WS-MAIUSCULAS
+           DISPLAY OP-VT AT 1067 WITH HIGHLIGHT FOREGROUND-COLOR 3
+           IF OP-VT NOT EQUAL 'S' AND OP-VT NOT EQUAL 'N'
+               GO TO VALIDAR_VT.
+      * FIM DA VERIFICA플O DA OP플O NO VT
+
+      * CALCULO DE HORAS EXTRAS, SALARIO BRUTO,DSR E DEDU플O POR DEPENDENTES
+           COMPUTE WS-TOTAL-HE = ( (WS-SALBA / WS-CH) + (WS-SALBA / WS-C
+      -H) * 50 / 100 ) * WS-HE.
+           COMPUTE WS-DSR = (WS-TOTAL-HE / 24) * 6.
+           COMPUTE WS-SALBR = WS-SALBA + WS-TOTAL-HE + WS-DSR.
+           COMPUTE WS-TOTAL-DEP = WS-DEP * 189,59.
+
+      * CALCULO DO VALE-TRANSPORTE DEPENDENDO QUE O USUARIO OPTE SE QUER OU NAO O VALE
+           IF SIM
+               COMPUTE WS-VT = WS-SALBA * 0,06
+           ELSE
+               COMPUTE WS-VT = 0
+           END-IF.
+
+      * CALCULO DO INSS - INICIO
+           IF (WS-SALBR > 0) AND (WS-SALBR <= 1556,94)
+               COMPUTE WS-INSS = WS-SALBR * 0,08
+           ELSE IF (WS-SALBR > 1556,94) AND (WS-SALBR <= 2594,92)
+               COMPUTE WS-INSS = WS-SALBR * 0,09
+           ELSE IF (WS-SALBR > 2594,92) AND (WS-SALBR <= 5189,82)
+               COMPUTE WS-INSS = WS-SALBR * 0,11
+           ELSE IF (WS-SALBR > 5189,82)
+               COMPUTE WS-INSS = 5189,82 * 0,11
+           ELSE
+               COMPUTE WS-INSS = 0
+           END-IF.
+      * CALCULO DO INSS - FIM
+
+      * CALCULO DO IRRF - INICIO
+           IF ((WS-SALBR - WS-INSS) - WS-TOTAL-DEP > 1903,98) AND
+      -(((WS-SALBR - WS-INSS) - WS-TOTAL-DEP) <= 2826,65)
+               COMPUTE WS-IRRF = (((WS-SALBR - WS-INSS) - WS-TOTAL-DEP)
+      - * 0,075) - 142,80
+           ELSE IF (((WS-SALBR - WS-INSS) - WS-TOTAL-DEP) > 2826,65
+      -) AND (((WS-SALBR - WS-INSS) - (WS-DEP * 189,59)) <= 3751,05)
+               COMPUTE WS-IRRF = (((WS-SALBR - WS-INSS) - WS-TOTAL-DEP)
+      - * 0,150) - 354,80
+           ELSE IF (((WS-SALBR - WS-INSS) - WS-TOTAL-DEP) > 3751,05
+      -) AND (((WS-SALBR - WS-INSS) - WS-TOTAL-DEP) <= 4664,68)
+               COMPUTE WS-IRRF = (((WS-SALBR - WS-INSS) - WS-TOTAL-DEP)
+      - * 0,225) - 636,13
+           ELSE IF (((WS-SALBR - WS-INSS) - WS-TOTAL-DEP) > 4664,68)
+               COMPUTE WS-IRRF = (((WS-SALBR - WS-INSS) - WS-TOTAL-DEP)
+      - * 0,275) - 869,36
+           ELSE
+               COMPUTE WS-IRRF = 0
+           END-IF.
+      * CALCULO DO IRRF - FIM
+
+
+      * CALCULO DO SALARIO FAMILIA - INICIO
+           IF (WS-SALBA <= 806,80) AND (WS-FILHOS > 0)
+               COMPUTE WS-TOTAL-SFM = 41,37 * WS-FILHOS
+           ELSE IF (WS-SALBA > 806,81) AND (WS-SALBA <= 1212,64) AND (W
+      -S-FILHOS > 0)
+               COMPUTE WS-TOTAL-SFM = 29,16 * WS-FILHOS
+           ELSE
+               COMPUTE WS-TOTAL-SFM = 0
+           END-IF.
+      * CALCULO SALARIO FAMILIA - FIM
+
+      * INICIO DA IMPRESSAO DOS PROVENTOS E DESCONTOS, UTILIZANDO EM ALGUNS CASOS MASCARA DE VALOR MONETARIO
+           DISPLAY "IRRF: R$" AT 1343 WITH HIGHLIGHT FOREGROUND-COLOR 4.
+           DISPLAY WS-IRRF AT 1352 WITH HIGHLIGHT FOREGROUND-COLOR 4.
+           DISPLAY "SALARIO BASE.....R$" AT 1305 WITH HIGHLIGHT FOREGROU
+      -ND-COLOR 2.
+           MOVE WS-SALBA TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 1325 WITH HIGHLIGHT FOREGROUND-COLOR 2.
+           DISPLAY "HORAS EXTRAS.....R$" AT 1405 WITH HIGHLIGHT FOREGROU
+      -ND-COLOR 2.
+           MOVE WS-TOTAL-HE TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 1425 WITH HIGHLIGHT FOREGROUND-COLOR 2.
+           DISPLAY "DSR..............R$" AT 1505 WITH HIGHLIGHT FOREGROU
+      -ND-COLOR 2.
+           MOVE WS-DSR TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 1525 WITH HIGHLIGHT FOREGROUND-COLOR 2.
+
+           DISPLAY "VALE-TRANSPORTE.R$" AT 1343 WITH HIGHLIGHT FOREGROU
+      -ND-COLOR 4.
+           MOVE WS-VT TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 1363 WITH HIGHLIGHT FOREGROUND-COLOR 4.
+           DISPLAY "INSS............R$" AT 1443 WITH HIGHLIGHT FOREGROUN
+      -D-COLOR 4.
+           MOVE WS-INSS TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 1463 WITH HIGHLIGHT FOREGROUND-COLOR 4.
+           DISPLAY "IRRF............R$" AT 1543 WITH HIGHLIGHT FOREGROUN
+      -D-COLOR 4.
+           MOVE WS-IRRF TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 1563 WITH HIGHLIGHT FOREGROUND-COLOR 4.
+           DISPLAY "SALARIO FAMILIA..R$" AT 1605 WITH HIGHLIGHT FOREGROU
+      -ND-COLOR 2.
+           MOVE WS-TOTAL-SFM TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 1625 WITH HIGHLIGHT FOREGROUND-COLOR 2.
+           COMPUTE WS-SALIQ = WS-SALBR - WS-INSS - WS-IRRF - WS-VT + WS-
+      -TOTAL-SF
+      -M.
+      * FIM DA IMPRESS홒 DOS PROVENTOS E DESCONTOS
+
+      * INICIO DA IMPRESSAO DO SALARIO BRUTO E LIQUIDO, UTILIZANDO MASCARA DE VALOR MONETARIO
+           MOVE WS-SALBR TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 2423.
+           MOVE WS-SALIQ TO MASC-MONEY.
+           DISPLAY MASC-MONEY AT 2463.
+      * FIM DA IMPRESSAO DO SALARIO BRUTO E LIQUIDO
+
+           OPEN EXTEND COLABORADOR-FS.
+               MOVE COLABORADOR TO COLABORADOR-FILE.
+               WRITE COLABORADOR-FILE
+               END-WRITE.
+           CLOSE COLABORADOR-FS.
+            STOP RUN.
+       END PROGRAM FOLHA-DE-PAGAMENTO.
